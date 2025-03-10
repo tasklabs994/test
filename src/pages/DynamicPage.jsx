@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import blogsData from "../blogs.json";
 import "../hello.css";
 
 export default function DynamicPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [blog, setBlog] = useState(null);
 
@@ -14,7 +15,7 @@ export default function DynamicPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
       // Use the exact current pathname for matching
       const currentRoute = location.pathname;
-      const foundBlog = blogsData.find(b => b.route === currentRoute);
+      const foundBlog = blogsData.find((b) => b.route === currentRoute);
       setBlog(foundBlog);
       setLoading(false);
     };
@@ -25,29 +26,28 @@ export default function DynamicPage() {
     if (!loading) {
       const container = document.getElementById("page-content");
       if (container) {
-        const hotSpots = container.querySelectorAll(".MCDropDownHotSpot");
-        const handleClick = function(e) {
-          e.preventDefault();
-          const parent = this.closest(".MCDropDown");
-          if (parent.classList.contains("MCDropDown_Closed")) {
-            parent.classList.remove("MCDropDown_Closed");
-            parent.classList.add("MCDropDown_Open");
-          } else {
-            parent.classList.add("MCDropDown_Closed");
-            parent.classList.remove("MCDropDown_Open");
+        // Intercept click events on links within the container
+        const handleLinkClick = (e) => {
+          // Check if the clicked element or any parent is an anchor tag
+          const anchor = e.target.closest("a");
+          if (anchor) {
+            const href = anchor.getAttribute("href");
+            // If the href is an internal route (for example, starting with "/blog")
+            // you can modify the condition to match your routing needs
+            if (href && href.startsWith("/blog")) {
+              e.preventDefault();
+              navigate(href);
+            }
           }
         };
-        hotSpots.forEach(element => {
-          element.addEventListener("click", handleClick);
-        });
+
+        container.addEventListener("click", handleLinkClick);
         return () => {
-          hotSpots.forEach(element => {
-            element.removeEventListener("click", handleClick);
-          });
+          container.removeEventListener("click", handleLinkClick);
         };
       }
     }
-  }, [loading]);
+  }, [loading, navigate]);
 
   if (loading) {
     return <div className="loading">Loading...</div>;
@@ -58,6 +58,9 @@ export default function DynamicPage() {
   }
 
   return (
-    <article id="page-content" dangerouslySetInnerHTML={{ __html: blog.fullData.html }} />
+    <article
+      id="page-content"
+      dangerouslySetInnerHTML={{ __html: blog.fullData.html }}
+    />
   );
 }
