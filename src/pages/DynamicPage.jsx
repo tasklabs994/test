@@ -26,19 +26,36 @@ export default function DynamicPage() {
     if (!loading) {
       const container = document.getElementById("page-content");
       if (container) {
-        // Intercept click events on links within the container
-        const handleLinkClick = (e) => {
-          // Check if the clicked element or any parent is an anchor tag
+        const handleClick = (e) => {
+          // First check if the clicked element (or one of its ancestors)
+          // is a dropdown toggle (has class "MCDropDownHotSpot")
+          const dropDownHotSpot = e.target.closest(".MCDropDownHotSpot");
+          if (dropDownHotSpot) {
+            e.preventDefault();
+            const parent = dropDownHotSpot.closest(".MCDropDown");
+            if (parent) {
+              if (parent.classList.contains("MCDropDown_Closed")) {
+                parent.classList.remove("MCDropDown_Closed");
+                parent.classList.add("MCDropDown_Open");
+              } else {
+                parent.classList.add("MCDropDown_Closed");
+                parent.classList.remove("MCDropDown_Open");
+              }
+              return; // Dropdown toggling handled; do not process further.
+            }
+          }
+
+          // If not a dropdown toggle, check for a regular anchor link.
           const anchor = e.target.closest("a");
           if (anchor) {
             const href = anchor.getAttribute("href");
             if (href) {
-              // Convert absolute URLs to relative if they belong to the current domain.
+              // Convert absolute URLs to relative ones if needed.
               const currentOrigin = window.location.origin;
               const relativeHref = href.startsWith(currentOrigin)
                 ? href.slice(currentOrigin.length)
                 : href;
-              // Intercept internal links that match your route pattern
+              // If the link is an internal route (e.g., starting with "/blog")
               if (relativeHref.startsWith("/blog")) {
                 e.preventDefault();
                 navigate(relativeHref);
@@ -47,9 +64,9 @@ export default function DynamicPage() {
           }
         };
 
-        container.addEventListener("click", handleLinkClick);
+        container.addEventListener("click", handleClick);
         return () => {
-          container.removeEventListener("click", handleLinkClick);
+          container.removeEventListener("click", handleClick);
         };
       }
     }
