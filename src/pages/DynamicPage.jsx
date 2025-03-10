@@ -32,11 +32,17 @@ export default function DynamicPage() {
           const anchor = e.target.closest("a");
           if (anchor) {
             const href = anchor.getAttribute("href");
-            // If the href is an internal route (for example, starting with "/blog")
-            // you can modify the condition to match your routing needs
-            if (href && href.startsWith("/blog")) {
-              e.preventDefault();
-              navigate(href);
+            if (href) {
+              // Convert absolute URLs to relative if they belong to the current domain.
+              const currentOrigin = window.location.origin;
+              const relativeHref = href.startsWith(currentOrigin)
+                ? href.slice(currentOrigin.length)
+                : href;
+              // Intercept internal links that match your route pattern
+              if (relativeHref.startsWith("/blog")) {
+                e.preventDefault();
+                navigate(relativeHref);
+              }
             }
           }
         };
