@@ -26,9 +26,12 @@
   width: 80%;
   padding: 10px;
   font-size: 16px;
-  border: 1px solid #ccc;
+  border: 2px solid #ccc;
   border-radius: 4px;
+  background-color: rgb(240, 240, 240);
+  color: #000;
 }
+
 
 .blog-cards {
   display: flex;
